@@ -21,7 +21,8 @@ function addFoodRow() {
             <input type="number" inputmode="decimal" class="form-control fat-per-100g" aria-label="Gramm Fett in 100g">
         </div>
         <div class="col-6 mb-3">
-            <input type="number" inputmode="decimal" class="form-control eaten-grams" aria-label="gegessene Gramm Lebensmittel">
+            <input type="number" inputmode="decimal" class="form-control eaten-grams" 
+            aria-label="gegessene Gramm Lebensmittel">
         </div>
     `;
     foodItemsDiv.appendChild(row);
@@ -52,6 +53,9 @@ document.getElementById('calculatorForm').addEventListener('submit', (event) => 
 
     const neededEnzymeUnits = parseFloat(enzymeUnitsInput.value) * totalFatGrams;
 
-    resultText.innerHTML = `Gesamtmenge Fett: ${totalFatGrams}g<br>Dafür benötigte Enzymeinheiten: ${neededEnzymeUnits}`;
+    resultText.innerHTML = `
+        Gesamtmenge Fett: ${totalFatGrams.toFixed(2)}g<br>
+        Dafür erforderlichen Enzymeinheiten: ${neededEnzymeUnits.toFixed(2)}
+    `;
     resultDiv.style.display = 'block';
 });
