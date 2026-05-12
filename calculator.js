@@ -54,7 +54,7 @@ document.getElementById('calculatorForm').addEventListener('submit', (event) => 
     const neededEnzymeUnits = enzymeUnitsPerGramFat * totalFatGrams;
 
     resultOutput.innerHTML = `
-        Gesamtmenge Fett: ${totalFatGrams.toFixed(1)}g<br>
+        Gegessene Menge Fett: ${totalFatGrams.toFixed(1)}g<br>
         Dafür erforderlichen Enzymeinheiten: ${neededEnzymeUnits.toFixed(1)}
     `;
     resultContainer.style.display = 'block';
