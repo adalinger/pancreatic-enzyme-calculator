@@ -3,8 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+          content="Berechnet die erforderlichen Pankreatin-Enzymeinheiten für eine Mahlzeit anhand der gegessenen Fettmenge.">
+    <meta name="theme-color" content="#f8f9fa" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#2b3035" media="(prefers-color-scheme: dark)">
     <title>Pankreatin-Rechner</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="data:,">
+    <script>
+        // follow the system color scheme
+        const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const applyColorScheme = () => document.documentElement.setAttribute('data-bs-theme', colorSchemeQuery.matches ? 'dark' : 'light');
+        applyColorScheme();
+        colorSchemeQuery.addEventListener('change', applyColorScheme);
+    </script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-yEPZ7jP9S0QKiUQ0m3jjsO4ProIW7wvR9gXkI7JOGa2XVsw53Yke2bsdkBbjmmiX"
+          crossorigin="anonymous">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -12,73 +26,115 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
+
+        main.container {
+            max-width: 480px;
+        }
+
+        input {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .food-column {
+            flex: 1 1 0;
+            min-width: 0;
+        }
+
+        .single-row .remove-food-btn, .single-row .remove-food-spacer {
+            display: none;
+        }
+
+        .remove-food-btn, .remove-food-spacer {
+            width: 38px;
+            height: 38px;
+            flex: 0 0 38px;
+        }
+
+        #neededEnzymeUnits {
+            font-size: 2rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        #infoDialog {
+            max-width: 500px;
+            color: var(--bs-body-color);
+            background: var(--bs-body-bg);
+        }
+
+        #infoDialog::backdrop {
+            background: rgba(0, 0, 0, 0.5);
+        }
     </style>
 </head>
 <body>
 
-<div class="modal" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="infoModalLabel">Hinweise</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
-            </div>
-            <div class="modal-body">
-                <p>
-                    Diese App berechnet die erforderlichen Einheiten Pankreatin für eine Mahlzeit. Die Berechnung
-                    basiert auf den erforderlichen Enzymeinheiten pro 1g Fett und der gegessenen Menge Fett. Der
-                    Fettgehalt von Lebensmitteln steht oft auf ihrer Verpackung, die gegessene Menge Lebensmittel sollte
-                    abgewogen werden.
-                </p>
-                <p>Die Verwendung dieser App geschieht auf eigene Verantwortung.</p>
-            </div>
-        </div>
+<dialog id="infoDialog" class="border-0 rounded-3 p-0 shadow" aria-labelledby="infoDialogLabel">
+    <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
+        <h2 class="h5 mb-0" id="infoDialogLabel">Hinweise</h2>
+        <button type="button" class="btn-close" id="closeInfoBtn" aria-label="Schließen"></button>
     </div>
-</div>
-
-<form id="calculatorForm">
-    <div class="container">
-        <div class="row">
-            <div class="col-12 mt-3">
-                <h3>
-                    Pankreatin-Rechner
-                </h3>
-            </div>
-
-            <div class="col-12 mt-3">
-                <label for="enzymeUnitsPerGramFat" class="form-label">erforderlichen Enzymeinheiten für 1g Fett</label>
-                <input type="number" inputmode="decimal" class="form-control" id="enzymeUnitsPerGramFat">
-            </div>
-
-            <div class="col-6 mt-3">
-                <label class="form-label">Gramm Fett in 100g Lebensmittel</label>
-            </div>
-            <div class="col-6 mt-3">
-                <label class="form-label">gegessene Gramm Lebensmittel</label>
-            </div>
-
-            <div id="foodItems" class="col-12">
-                <!-- food rows inserted by calculator.js -->
-            </div>
-
-            <div class="col-md-12 mt-3">
-                <button type="submit" class="btn btn-primary mb-2">Berechnen</button>
-                <button type="button" class="btn btn-success mb-2" id="addFoodBtn">Lebensmittel hinzufügen</button>
-                <button type="button" class="btn btn-danger mb-2" id="removeFoodBtn">Lebensmittel entfernen</button>
-                <button type="button" class="btn btn-dark mb-2" data-bs-toggle="modal" data-bs-target="#infoModal"
-                        aria-label="Hinweise zur Nutzung">Hinweise
-                </button>
-            </div>
-
-            <div class="col-md-12 mt-3" id="resultContainer" style="display: none;">
-                <!-- result inserted by calculator.js -->
-                <div id="resultOutput"></div>
-            </div>
-        </div>
+    <div class="p-3">
+        <p>
+            Diese App berechnet die erforderlichen Einheiten Pankreatin für eine Mahlzeit. Die Berechnung
+            basiert auf den erforderlichen Enzymeinheiten pro 1 g Fett und der gegessenen Menge Fett. Der
+            Fettgehalt von Lebensmitteln steht oft auf ihrer Verpackung, die gegessene Menge Lebensmittel sollte
+            abgewogen werden.
+        </p>
+        <p class="mb-0">Die Verwendung dieser App geschieht auf eigene Verantwortung.</p>
     </div>
-</form>
+</dialog>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<main class="container py-3">
+    <header class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h3 mb-0">Pankreatin-Rechner</h1>
+        <button type="button"
+                class="btn btn-link link-secondary rounded-circle d-flex align-items-center justify-content-center p-0"
+                style="width: 38px; height: 38px;" id="openInfoBtn" aria-label="Hinweise zur Nutzung">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"
+                 aria-hidden="true">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+            </svg>
+        </button>
+    </header>
+
+    <form id="calculatorForm" novalidate>
+        <div class="mb-3">
+            <label for="enzymeUnitsPerGramFat" class="form-label">Enzymeinheiten für 1 g Fett</label>
+            <input type="text" inputmode="decimal" enterkeyhint="next" autocomplete="off" class="form-control"
+                   id="enzymeUnitsPerGramFat" aria-describedby="enzymeUnitsPerGramFatFeedback">
+            <div class="invalid-feedback" id="enzymeUnitsPerGramFatFeedback"></div>
+        </div>
+
+        <div class="d-flex gap-2 align-items-end mb-2" aria-hidden="true">
+            <div class="food-column">Gramm Fett in 100 g Lebensmittel</div>
+            <div class="food-column">Gegessene Gramm Lebensmittel</div>
+            <div class="remove-food-spacer"></div>
+        </div>
+
+        <div id="foodItems">
+            <!-- food rows inserted by calculator.js -->
+        </div>
+
+        <div class="d-flex gap-2 mb-2">
+            <button type="button" class="btn btn-outline-primary w-50 text-nowrap" id="addFoodBtn">+ Lebensmittel
+            </button>
+            <button type="button" class="btn btn-outline-secondary w-50" id="newMealBtn">Zurücksetzen</button>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Berechnen</button>
+    </form>
+
+    <div class="mt-4 p-3 rounded-3 bg-primary-subtle" aria-live="polite">
+        <div>Erforderliche Enzymeinheiten</div>
+        <div class="fw-bold text-primary-emphasis" id="neededEnzymeUnits">–</div>
+        <div class="small text-body-secondary" id="resultDetails">Bitte Werte eingeben.</div>
+    </div>
+
+    <footer class="mt-4">
+        <small class="text-body-secondary">Nutzung auf eigene Verantwortung.</small>
+    </footer>
+</main>
+
 <script src="./calculator.js"></script>
 </body>
 </html>
